@@ -1,5 +1,7 @@
 # Docker 部署说明
 
+原始的docker镜像启动后产生3个容器，不方便ctfd靶场部署，特建立dockerfile。
+
 ## 快速开始
 
 ### 构建 Docker 镜像
@@ -11,7 +13,7 @@ docker build -t encrypt-labs .
 ### 运行容器
 
 ```bash
-docker run -d -p 80:80 --name encrypt-labs-container encrypt-labs
+docker run -d -P --name encrypt-labs-container encrypt-labs
 ```
 
 或者指定自定义端口:
@@ -91,69 +93,3 @@ mysql -u bachang -p1234567 encryptDB
 ```bash
 mysql -u root -proot123456
 ```
-
-## 服务说明
-
-容器内运行的服务:
-
-1. **Nginx** - Web 服务器 (端口 80)
-2. **MySQL** - 数据库服务 (端口 3306,仅容器内部)
-3. **PHP 8.1-FPM** - PHP 处理器
-
-所有服务通过 Supervisor 进行管理和监控。
-
-## 故障排查
-
-### 查看服务状态
-
-进入容器后执行:
-
-```bash
-supervisorctl status
-```
-
-### 重启服务
-
-```bash
-# 重启 Nginx
-supervisorctl restart nginx
-
-# 重启 PHP-FPM
-supervisorctl restart php-fpm
-
-# 重启 MySQL
-supervisorctl restart mysql
-```
-
-### 查看服务日志
-
-```bash
-# Nginx 日志
-tail -f /var/log/supervisor/nginx.log
-
-# PHP-FPM 日志
-tail -f /var/log/supervisor/php-fpm.log
-
-# MySQL 日志
-tail -f /var/log/supervisor/mysql.log
-```
-
-## 注意事项
-
-1. 容器重启后数据库数据会丢失,如需持久化请使用 Docker 卷挂载
-2. 生产环境建议修改默认密码
-3. 如需外部访问 MySQL,需要在 `docker run` 时添加 `-p 3306:3306` 参数
-
-## 数据持久化 (可选)
-
-如需持久化 MySQL 数据:
-
-```bash
-docker run -d \
-  -p 80:80 \
-  -v mysql-data:/var/lib/mysql \
-  --name encrypt-labs-container \
-  encrypt-labs
-```
-
-这将创建一个名为 `mysql-data` 的 Docker 卷来存储数据库文件。
